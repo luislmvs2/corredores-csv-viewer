@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
+  <title>Visor comparativo: Zones y Vianey</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    html,body,#map{width:100vw;height:100vh;margin:0} body{font-family:system-ui,sans-serif;color:#172033} #map{background:#e8edf3} #map.no-basemap{background:linear-gradient(135deg,#eef2f7,#dbe4ee)} .panel{position:fixed;z-index:1000;width:min(290px,calc(100vw - 24px));background:#fff;border:1px solid #6d7786;border-radius:8px;box-shadow:0 4px 18px #0004} #sectors-panel{top:12px;left:12px} #states-panel{top:12px;right:12px} .panel-handle{cursor:grab;padding:9px 12px;background:#172033;color:#fff;border-radius:7px 7px 0 0;font-weight:700;touch-action:none} .panel-handle:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #ffbf47;outline-offset:2px} .panel-content{padding:10px;max-height:calc(100vh - 115px);overflow:auto} .panel-actions{display:flex;gap:8px;margin:0 0 8px} button{font:inherit;padding:5px 8px} fieldset{border:0;margin:0;padding:0} label{display:flex;gap:7px;align-items:center;padding:3px 0} .dashboard{position:fixed;bottom:14px;left:12px;z-index:1000;background:#fff;padding:9px 12px;border:1px solid #6d7786;border-radius:8px;box-shadow:0 2px 10px #0004} .legend{position:fixed;bottom:14px;right:12px;z-index:1000;background:#fff;padding:9px 12px;border:1px solid #6d7786;border-radius:8px} .swatch{display:inline-block;width:13px;height:13px;margin-right:5px;border:2px solid;vertical-align:middle} .blue{background:#2563eb73;border-color:#1d4ed8} .red{background:#dc26268c;border-color:#b91c1c} .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0} #basemap-status{position:fixed;z-index:1000;top:12px;left:50%;transform:translateX(-50%);max-width:min(460px,calc(100vw - 48px));padding:8px 12px;background:#172033;color:#fff;border:1px solid #6d7786;border-radius:8px;box-shadow:0 2px 10px #0004;font-size:.9rem;line-height:1.35;pointer-events:none;text-align:center} #basemap-status[hidden]{display:none} #runtime-status{margin-top:6px;font-size:.88rem;color:#8a2c00} .leaflet-control-attribution{font-size:11px}
+    #sources-panel{top:128px;left:50%;transform:translateX(-50%);width:min(690px,calc(100vw - 24px));font-size:.9rem;line-height:1.35}.sources-content{padding:10px;max-height:calc(100vh - 188px);overflow:auto}.source-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.source-column{min-width:0;border:1px solid #cbd5e1;border-radius:6px;padding:8px;background:#f8fafc}.source-heading{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.source-heading strong{margin-right:auto}.source-heading .swatch{margin-right:0;flex:0 0 auto}.layer-toggle,.entity-toggle{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:8px;border:1px solid #6d7786;border-radius:5px;background:#fff;color:#172033;cursor:pointer}.layer-toggle[aria-pressed="false"],.entity-toggle[aria-pressed="false"]{color:#475569;background:#e2e8f0}.visibility-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.visibility-icon .eye-slash{display:none}.layer-toggle[aria-pressed="false"] .eye-slash,.entity-toggle[aria-pressed="false"] .eye-slash{display:block}.source-count,.manual-count{display:block;margin:6px 0 0}.manual-count{font-size:.84rem;color:#475569}.focus-instructions{margin:6px 0 0;font-size:.84rem;color:#475569}.entity-list{max-height:min(42vh,360px);margin:7px 0 0;padding:0;overflow:auto;list-style:none;border-top:1px solid #cbd5e1}.entity-section{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin:10px 0 0;padding:6px 0 3px;border-bottom:1px solid #94a3b8;color:#1e293b;font-weight:700}.entity-section:first-child{margin-top:0}.entity-section-count{font-size:.82rem;font-weight:600;color:#475569;white-space:nowrap}.entity-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #e2e8f0}.entity-name{min-width:0;overflow-wrap:anywhere}.entity-toggle{margin-left:auto;flex:0 0 auto}.leaflet-control-attribution{z-index:1001}@media (max-width:640px){#sources-panel{top:116px}.source-columns{grid-template-columns:1fr}.entity-list{max-height:25vh}.sources-content{max-height:calc(100vh - 176px)}}
+    #feature-info{position:fixed;z-index:1000;top:12px;left:50%;transform:translateX(-50%);width:min(460px,calc(100vw - 48px));padding:12px 42px 12px 14px;background:#fff;color:#172033;border:2px solid #172033;border-radius:8px;box-shadow:0 4px 18px #0005;font-size:1rem;line-height:1.4}#feature-info[hidden]{display:none}#feature-info h2{margin:0 0 7px;font-size:1.05rem}#feature-info dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 10px;margin:0}#feature-info dt{font-weight:700}#feature-info dd{margin:0;overflow-wrap:anywhere}#feature-info-close{position:absolute;top:7px;right:7px;min-width:32px;min-height:32px;padding:3px 7px;border:1px solid #475569;border-radius:5px;background:#fff;color:#172033;cursor:pointer}.viewer-hover-tooltip{max-width:300px;background:#172033;color:#fff;border:1px solid #fff;border-radius:6px;box-shadow:0 3px 12px #0006;font-size:.92rem;line-height:1.35}.viewer-hover-tooltip:before{border-top-color:#172033}.viewer-hover-tooltip strong{font-size:1rem}@media (max-width:640px){#feature-info{top:8px;width:min(420px,calc(100vw - 24px));font-size:.95rem}}
+    .map-center-control{position:fixed;z-index:1000;bottom:14px;left:12px;width:44px;height:44px;padding:8px;border:1px solid #6d7786;border-radius:4px;background:#fff;color:#172033;box-shadow:0 1px 5px #0005;cursor:pointer}.map-center-control:hover{background:#f1f5f9}.map-center-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2}.sources-content{max-height:max(0px,calc(100vh - 400px))}
+  </style>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" onerror="document.getElementById('runtime-status').textContent='No se pudo cargar Leaflet desde el CDN. Los datos permanecen embebidos, pero el mapa no está disponible.'"></script>
+</head>
+<body>
+<main aria-label="Visor comparativo de Zones y Vianey"><div id="map" role="application" aria-label="Mapa comparativo"></div><section id="feature-info" role="region" aria-live="polite" aria-labelledby="feature-info-title" hidden><button id="feature-info-close" type="button" aria-label="Cerrar información del polígono" title="Cerrar información">×</button><h2 id="feature-info-title">Información del polígono</h2><dl id="feature-info-content"></dl></section><div id="basemap-status" role="status" aria-live="polite" hidden></div>
+ <section id="sectors-panel" class="panel" aria-labelledby="sectors-title"><div class="panel-handle" tabindex="0" aria-label="Panel de sectores. Puede arrastrarse con apuntador."><span id="sectors-title">Sectores</span></div><div class="panel-content"><div class="panel-actions"><button type="button" data-group="sector" data-action="all">Seleccionar todo</button><button type="button" data-group="sector" data-action="clear">Limpiar</button></div><fieldset id="sector-options"><legend class="sr-only">Sectores</legend></fieldset></div></section>
+ <section id="states-panel" class="panel" aria-labelledby="states-title"><div class="panel-handle" tabindex="0" aria-label="Panel de estados. Puede arrastrarse con apuntador."><span id="states-title">Estados</span></div><div class="panel-content"><div class="panel-actions"><button type="button" data-group="state" data-action="all">Seleccionar todo</button><button type="button" data-group="state" data-action="clear">Limpiar</button></div><fieldset id="state-options"><legend class="sr-only">Estados</legend></fieldset></div></section>
+ <button id="fit-results" class="map-center-control" type="button" aria-label="Centrar mapa en resultados visibles" title="Centrar mapa en resultados visibles"><svg class="map-center-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle></svg><span class="sr-only">Centrar mapa en resultados visibles</span></button><div id="map-status" class="sr-only" role="status" aria-live="polite"></div><div id="runtime-status" class="sr-only" role="status" aria-live="polite"></div>
+<section id="sources-panel" class="panel" aria-labelledby="sources-title"><div class="panel-handle" tabindex="0" aria-label="Panel de corredores y polígonos. Puede arrastrarse con apuntador."><span id="sources-title">Corredores y polígonos</span></div><div class="sources-content"><div class="source-columns"><section class="source-column" aria-labelledby="zones-source-title"><div class="source-heading"><span class="swatch blue" aria-hidden="true"></span><strong id="zones-source-title">Zones</strong><button class="layer-toggle" type="button" data-layer-toggle="zone" aria-pressed="true" aria-label="Ocultar Zones" title="Ocultar Zones"><svg class="visibility-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/><path class="eye-slash" d="M3 3 21 21"/></svg><span class="sr-only">Ocultar Zones</span></button></div><span id="zone-source-count" class="source-count"></span><span id="zone-manual-count" class="manual-count"></span><ul id="zone-entity-list" class="entity-list" aria-label="Polígonos Zones que pasan los filtros"></ul></section><section class="source-column" aria-labelledby="vianey-source-title"><div class="source-heading"><span class="swatch red" aria-hidden="true"></span><strong id="vianey-source-title">Vianey</strong><button class="layer-toggle" type="button" data-layer-toggle="vianey" aria-pressed="true" aria-label="Ocultar Vianey" title="Ocultar Vianey"><svg class="visibility-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/><path class="eye-slash" d="M3 3 21 21"/></svg><span class="sr-only">Ocultar Vianey</span></button></div><span id="vianey-source-count" class="source-count"></span><span id="vianey-manual-count" class="manual-count"></span><ul id="vianey-entity-list" class="entity-list" aria-label="Corredores Vianey que pasan los filtros"></ul></section></div></div></section></main>
+<script>
+'use strict';
+</script>
+<script src="./assets/manifest.js"></script>
+<script src="./assets/states-001.js"></script>
+<script src="./assets/states-002-part-001.js"></script>
+<script src="./assets/states-002-part-002.js"></script>
+<script src="./assets/states-002-part-003.js"></script>
+<script src="./assets/states-002-part-004.js"></script>
+<script src="./assets/states-002-part-005.js"></script>
+<script src="./assets/states-002-assemble.js"></script>
+<script src="./assets/states-003-part-001.js"></script>
+<script src="./assets/states-003-part-002.js"></script>
+<script src="./assets/states-003-part-003.js"></script>
+<script src="./assets/states-003-part-004.js"></script>
+<script src="./assets/states-003-part-005.js"></script>
+<script src="./assets/states-003-part-006.js"></script>
+<script src="./assets/states-003-part-007.js"></script>
+<script src="./assets/states-003-part-008.js"></script>
+<script src="./assets/states-003-part-009.js"></script>
+<script src="./assets/states-003-assemble.js"></script>
+<script src="./assets/states-002.js"></script>
+<script src="./assets/states-005-part-001.js"></script>
+<script src="./assets/states-005-part-002.js"></script>
+<script src="./assets/states-005-part-003.js"></script>
+<script src="./assets/states-005-assemble.js"></script>
+<script src="./assets/states-003.js"></script>
+<script src="./assets/states-007-part-001.js"></script>
+<script src="./assets/states-007-part-002.js"></script>
+<script src="./assets/states-007-part-003.js"></script>
+<script src="./assets/states-007-assemble.js"></script>
+<script src="./assets/states-008-part-001.js"></script>
+<script src="./assets/states-008-part-002.js"></script>
+<script src="./assets/states-008-part-003.js"></script>
+<script src="./assets/states-008-part-004.js"></script>
+<script src="./assets/states-008-assemble.js"></script>
+<script src="./assets/states-004.js"></script>
+<script src="./assets/states-010-part-001.js"></script>
+<script src="./assets/states-010-part-002.js"></script>
+<script src="./assets/states-010-part-003.js"></script>
+<script src="./assets/states-010-assemble.js"></script>
+<script src="./assets/states-011-part-001.js"></script>
+<script src="./assets/states-011-part-002.js"></script>
+<script src="./assets/states-011-part-003.js"></script>
+<script src="./assets/states-011-assemble.js"></script>
+<script src="./assets/states-012-part-001.js"></script>
+<script src="./assets/states-012-part-002.js"></script>
+<script src="./assets/states-012-part-003.js"></script>
+<script src="./assets/states-012-part-004.js"></script>
+<script src="./assets/states-012-assemble.js"></script>
+<script src="./assets/states-013-part-001.js"></script>
+<script src="./assets/states-013-part-002.js"></script>
+<script src="./assets/states-013-part-003.js"></script>
+<script src="./assets/states-013-part-004.js"></script>
+<script src="./assets/states-013-assemble.js"></script>
+<script src="./assets/states-014-part-001.js"></script>
+<script src="./assets/states-014-part-002.js"></script>
+<script src="./assets/states-014-part-003.js"></script>
+<script src="./assets/states-014-part-004.js"></script>
+<script src="./assets/states-014-part-005.js"></script>
+<script src="./assets/states-014-part-006.js"></script>
+<script src="./assets/states-014-part-007.js"></script>
+<script src="./assets/states-014-assemble.js"></script>
+<script src="./assets/states-015-part-001.js"></script>
+<script src="./assets/states-015-part-002.js"></script>
+<script src="./assets/states-015-part-003.js"></script>
+<script src="./assets/states-015-assemble.js"></script>
+<script src="./assets/states-016-part-001.js"></script>
+<script src="./assets/states-016-part-002.js"></script>
+<script src="./assets/states-016-part-003.js"></script>
+<script src="./assets/states-016-part-004.js"></script>
+<script src="./assets/states-016-assemble.js"></script>
+<script src="./assets/states-005.js"></script>
+<script src="./assets/states-018-part-001.js"></script>
+<script src="./assets/states-018-part-002.js"></script>
+<script src="./assets/states-018-part-003.js"></script>
+<script src="./assets/states-018-part-004.js"></script>
+<script src="./assets/states-018-assemble.js"></script>
+<script src="./assets/states-006.js"></script>
+<script src="./assets/states-020-part-001.js"></script>
+<script src="./assets/states-020-part-002.js"></script>
+<script src="./assets/states-020-part-003.js"></script>
+<script src="./assets/states-020-part-004.js"></script>
+<script src="./assets/states-020-assemble.js"></script>
+<script src="./assets/states-021-part-001.js"></script>
+<script src="./assets/states-021-part-002.js"></script>
+<script src="./assets/states-021-part-003.js"></script>
+<script src="./assets/states-021-part-004.js"></script>
+<script src="./assets/states-021-assemble.js"></script>
+<script src="./assets/states-007.js"></script>
+<script src="./assets/states-023-part-001.js"></script>
+<script src="./assets/states-023-part-002.js"></script>
+<script src="./assets/states-023-part-003.js"></script>
+<script src="./assets/states-023-part-004.js"></script>
+<script src="./assets/states-023-part-005.js"></script>
+<script src="./assets/states-023-assemble.js"></script>
+<script src="./assets/states-024-part-001.js"></script>
+<script src="./assets/states-024-part-002.js"></script>
+<script src="./assets/states-024-part-003.js"></script>
+<script src="./assets/states-024-assemble.js"></script>
+<script src="./assets/states-025-part-001.js"></script>
+<script src="./assets/states-025-part-002.js"></script>
+<script src="./assets/states-025-part-003.js"></script>
+<script src="./assets/states-025-assemble.js"></script>
+<script src="./assets/states-026-part-001.js"></script>
+<script src="./assets/states-026-part-002.js"></script>
+<script src="./assets/states-026-part-003.js"></script>
+<script src="./assets/states-026-part-004.js"></script>
+<script src="./assets/states-026-part-005.js"></script>
+<script src="./assets/states-026-assemble.js"></script>
+<script src="./assets/states-027-part-001.js"></script>
+<script src="./assets/states-027-part-002.js"></script>
+<script src="./assets/states-027-part-003.js"></script>
+<script src="./assets/states-027-assemble.js"></script>
+<script src="./assets/states-028-part-001.js"></script>
+<script src="./assets/states-028-part-002.js"></script>
+<script src="./assets/states-028-part-003.js"></script>
+<script src="./assets/states-028-assemble.js"></script>
+<script src="./assets/states-008.js"></script>
+<script src="./assets/states-030-part-001.js"></script>
+<script src="./assets/states-030-part-002.js"></script>
+<script src="./assets/states-030-part-003.js"></script>
+<script src="./assets/states-030-part-004.js"></script>
+<script src="./assets/states-030-part-005.js"></script>
+<script src="./assets/states-030-part-006.js"></script>
+<script src="./assets/states-030-assemble.js"></script>
+<script src="./assets/states-031-part-001.js"></script>
+<script src="./assets/states-031-part-002.js"></script>
+<script src="./assets/states-031-part-003.js"></script>
+<script src="./assets/states-031-assemble.js"></script>
+<script src="./assets/states-032-part-001.js"></script>
+<script src="./assets/states-032-part-002.js"></script>
+<script src="./assets/states-032-part-003.js"></script>
+<script src="./assets/states-032-part-004.js"></script>
+<script src="./assets/states-032-part-005.js"></script>
+<script src="./assets/states-032-assemble.js"></script>
+<script src="./assets/zones-001.js"></script>
+<script src="./assets/zones-002.js"></script>
+<script src="./assets/zones-003.js"></script>
+<script src="./assets/zones-004.js"></script>
+<script src="./assets/zones-005.js"></script>
+  <script src="./assets/vianey-001.js"></script>
+  <script src="./assets/vianey-002.js"></script>
+  <script src="./assets/vianey-003.js"></script>
+  <script src="./assets/vianey-004.js"></script>
+  <script src="./assets/vianey-005.js"></script>
+  <script src="./assets/vianey-006.js"></script>
+  <script src="./assets/vianey-007.js"></script>
+  <script src="./assets/vianey-008.js"></script>
+  <script src="./assets/vianey-009.js"></script>
+  <script src="./assets/vianey-010.js"></script>
+  <script src="./assets/vianey-011.js"></script>
+  <script src="./assets/vianey-012.js"></script>
+  <script src="./assets/vianey-013.js"></script>
+  <script src="./assets/vianey-014.js"></script>
+  <script src="./assets/vianey-015.js"></script>
+  <script src="./assets/vianey-016.js"></script>
+  <script src="./assets/vianey-017.js"></script>
+  <script src="./assets/vianey-018.js"></script>
+<script>
+'use strict';
+const STATES={type:'FeatureCollection',features:window.VIEWER_DATA.STATES_FEATURES};
+const ZONES={type:'FeatureCollection',features:window.VIEWER_DATA.ZONES_FEATURES};
+const VIANEY={type:'FeatureCollection',features:window.VIEWER_DATA.VIANEY_FEATURES};
+const sectorCatalog={"9":"Industrial","11":"Office","13":"Retail","15":"Land"};
+const relatedStateIds=new Set([...ZONES.features,...VIANEY.features].flatMap(feature=>feature.properties.state_ids));
+const allStates=STATES.features.map(f=>[f.properties.id,f.properties.name]).filter(([id])=>relatedStateIds.has(id)).sort((a,b)=>a[1].localeCompare(b[1],'es'));
+const selected={sector:new Set(Object.keys(sectorCatalog).map(Number)),state:new Set(allStates.map(x=>x[0]))};
+    const byId={zone:new Map(),vianey:new Map()},stateLayers=new Map(),manualHidden={zone:new Set(),vianey:new Set()}; let focused=null, map, zoneLayer, vianeyLayer, focusLayer, hoverTooltip;
+function intersects(values, selection){return values.some(value=>selection.has(value));}
+function visible(feature){return selected.sector.size>0 && selected.state.size>0 && intersects(feature.properties.sector_ids,selected.sector) && intersects(feature.properties.state_ids,selected.state);}
+ function featureDetails(feature){const p=feature.properties;return {source:p.layer,name:entityName(feature,p.layer==='Vianey'?'vianey':'zone'),sectors:p.sector_names.map(escapeHtml).join(', '),states:p.state_names.map(escapeHtml).join(', ') || 'Sin asignación'};}
+ function hoverMarkup(feature){const d=featureDetails(feature);return `<strong>${escapeHtml(d.source)}</strong><br>${escapeHtml(d.name)}<br><b>Sectores:</b> ${d.sectors}<br><b>Estados:</b> ${d.states}`;}
+ function fixedMarkup(feature){const d=featureDetails(feature);return `<dt>Fuente</dt><dd>${escapeHtml(d.source)}</dd><dt>Nombre</dt><dd>${escapeHtml(d.name)}</dd><dt>Sectores</dt><dd>${d.sectors}</dd><dt>Estados</dt><dd>${d.states}</dd>`;}
+function escapeHtml(value){const d=document.createElement('div');d.textContent=value;return d.innerHTML;}
+ function populate(group, entries, containerId){const container=document.getElementById(containerId); container.replaceChildren(); for(const [id,name] of entries){const label=document.createElement('label'), box=document.createElement('input');box.type='checkbox';box.checked=true;box.value=id;box.dataset.group=group;box.addEventListener('change',()=>{box.checked?selected[group].add(group==='sector'?Number(id):id):selected[group].delete(group==='sector'?Number(id):id);refresh();});label.append(box,document.createTextNode(name));container.append(label);}}
+  function stateStyle(id){return selected.state.has(id)?{color:'#0f172a',weight:4,opacity:1,fill:false,fillOpacity:0}:{color:'#64748b',weight:1.25,opacity:1,fill:false,fillOpacity:0};}
+  function registerStateLayer(feature,layer){const id=feature.properties.id;if(typeof id!=='string'||!id)throw new Error('Each state boundary requires a stable ID.');const layers=stateLayers.get(id)||[];layers.push(layer);stateLayers.set(id,layers);const identify=()=>{const element=layer.getElement();if(element)element.dataset.stateId=id;};layer.on('add',identify);identify();}
+  function refreshStateStyles(){for(const [id,layers] of stateLayers)for(const layer of layers)layer.setStyle(stateStyle(id));}
+     function visibilityIcon(){return '<svg class="visibility-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/><path class="eye-slash" d="M3 3 21 21"/></svg>';}
+      function syncLayerToggle(kind){const button=document.querySelector(`[data-layer-toggle="${kind}"]`),name=kind==='zone'?'Zones':'Vianey',allVisible=manualHidden[kind].size===0,action=allVisible?'Ocultar todos':'Mostrar todos',label=`${action} ${name}`;button.setAttribute('aria-pressed',String(allVisible));button.setAttribute('aria-label',label);button.title=label;button.querySelector('.sr-only').textContent=label;}
+      function toggleAllEntities(kind){if(manualHidden[kind].size===0)for(const id of byId[kind].keys())manualHidden[kind].add(id);else manualHidden[kind].clear();refresh();}
+    function entityName(feature,kind){return kind==='vianey'?(feature.properties.corridor_label||feature.properties.name):(feature.properties.name||feature.properties.id||'Sin nombre');}
+    function initializeEntities(kind,data){data.features.forEach((feature,index)=>{const id=String(feature.properties.id||feature.properties.corridor_id||`${kind}:${index}`);feature.__viewerId=id;byId[kind].set(id,{id,feature,name:entityName(feature,kind),layer:null});});}
+       function renderSourceList(kind,count){const bucket=byId[kind],list=document.getElementById(`${kind}-entity-list`),groups=new Map(),hiddenCount=manualHidden[kind].size;for(const item of bucket.values())if(visible(item.feature)){const state=item.feature.properties.dominant_state_name;const group=groups.get(state)||[];group.push(item);groups.set(state,group);}document.getElementById(`${kind}-source-count`).textContent=`${count} por filtro / ${bucket.size}`;document.getElementById(`${kind}-manual-count`).textContent=hiddenCount===0?'Sin elementos ocultos manualmente':hiddenCount===bucket.size?'Todos los elementos ocultos manualmente':`Ocultos manualmente: ${hiddenCount} de ${bucket.size}`;const nodes=[];for(const [state,items] of [...groups].sort(([a],[b])=>a.localeCompare(b,'es',{sensitivity:'base'}))){const header=document.createElement('li'),title=document.createElement('span'),sectionCount=document.createElement('span');header.className='entity-section';title.textContent=state;sectionCount.className='entity-section-count';sectionCount.textContent=`${items.length}`;header.append(title,sectionCount);nodes.push(header);for(const item of items.sort((a,b)=>a.name.localeCompare(b.name,'es',{sensitivity:'base'})||a.id.localeCompare(b.id))){const hidden=manualHidden[kind].has(item.id),action=hidden?'Mostrar':'Ocultar',buttonLabel=`${action} ${item.name}`,row=document.createElement('li'),label=document.createElement('span'),button=document.createElement('button');row.className='entity-row';label.className='entity-name';label.textContent=item.name;button.type='button';button.className='entity-toggle';button.dataset.entityToggle=kind;button.dataset.entityId=item.id;button.setAttribute('aria-pressed',String(!hidden));button.setAttribute('aria-label',buttonLabel);button.title=buttonLabel;button.innerHTML=`${visibilityIcon()}<span class="sr-only">${escapeHtml(buttonLabel)}</span>`;button.addEventListener('click',()=>{hidden?manualHidden[kind].delete(item.id):manualHidden[kind].add(item.id);refresh();});row.append(label,button);nodes.push(row);}}list.replaceChildren(...nodes);}
+      function focusKey(kind,id){return `${kind}:${id}`;}
+      function focusStyle(kind){return kind==='zone'?{color:'#1d4ed8',weight:5,opacity:1,fillColor:'#2563eb',fillOpacity:.7}:{color:'#991b1b',weight:5.5,opacity:1,fillColor:'#dc2626',fillOpacity:.75};}
+       function focusedFeatures(){if(!focused)return [];const separator=focused.indexOf(':'),kind=focused.slice(0,separator),id=focused.slice(separator+1),item=byId[kind]?.get(id);return item&&visible(item.feature)&&!manualHidden[kind].has(id)?[{...item.feature,__focusKind:kind,__focusId:id}]:[];}
+       function closeHover(){if(!hoverTooltip)return;const element=hoverTooltip.getElement();hoverTooltip.remove();element?.remove();}
+        function openHover(feature,layer,event){if(!hoverTooltip)hoverTooltip=L.tooltip({className:'viewer-hover-tooltip',direction:'top',sticky:true,interactive:false,opacity:1});hoverTooltip.setContent(hoverMarkup(feature)).setLatLng(event?.latlng||layer.getBounds().getCenter());map.openTooltip(hoverTooltip);}
+       function clearFixedInfo(){document.getElementById('feature-info').hidden=true;document.getElementById('feature-info-content').replaceChildren();}
+       function syncFixedInfo(){const feature=focusedFeatures()[0];if(!feature){clearFixedInfo();return;}document.getElementById('feature-info-content').innerHTML=fixedMarkup(feature);document.getElementById('feature-info').hidden=false;}
+       function syncFocusLayer(){if(!focusLayer)return;closeHover();focusLayer.clearLayers();focusLayer.addData({type:'FeatureCollection',features:focusedFeatures()});syncFixedInfo();}
+       function toggleFocus(kind,id){const key=focusKey(kind,id);focused=focused===key?null:key;closeHover();map.closePopup();syncFocusLayer();}
+       function refresh(){let z=0,v=0;refreshStateStyles();for(const [kind,bucket] of Object.entries(byId)){let count=0;for(const item of bucket.values()){const matches=visible(item.feature),draw=matches&&!manualHidden[kind].has(item.id);if(item.layer){item.layer.setStyle({opacity:draw?1:0,fillOpacity:draw?(kind==='zone'?.45:.55):0});const element=item.layer.getElement();if(element)element.style.pointerEvents=draw?'auto':'none';}if(matches)count++;}if(kind==='zone')z=count;else v=count;syncLayerToggle(kind);renderSourceList(kind,count);}syncFocusLayer();document.getElementById('map-status').textContent=(z+v)===0?'No hay resultados: una entidad requiere un sector seleccionado y un estado seleccionado.':'';}
+      function makeInteractive(feature,layer,kind,id){const configure=()=>{const element=layer.getElement();if(!element)return;element.setAttribute('tabindex','0');element.setAttribute('role','button');element.setAttribute('aria-label',`Ver información de ${entityName(feature,kind)}`);element.addEventListener('focus',()=>openHover(feature,layer));element.addEventListener('blur',closeHover);element.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFocus(kind,id);}});};layer.on('add',configure);configure();layer.on('mouseover',event=>openHover(feature,layer,event));layer.on('mouseout',closeHover);layer.on('click',()=>toggleFocus(kind,id));}
+      function addLayer(data, style, bucket, pane, kind){return L.geoJSON(data,{pane,style,onEachFeature:(feature,layer)=>{const item=bucket.get(feature.__viewerId);makeInteractive(feature,layer,kind,item.id);item.layer=layer;}}).addTo(map);}
+    function fitResults(){const layers=[];for(const [kind,bucket] of Object.entries(byId))for(const item of bucket.values())if(visible(item.feature)&&!manualHidden[kind].has(item.id)&&item.layer)layers.push(item.layer);if(!layers.length){document.getElementById('map-status').textContent='No hay geometrías visibles para centrar el mapa.';return;}map.fitBounds(L.featureGroup(layers).getBounds(),{padding:[30,30]});}
+ function installDrag(panel){const handle=panel.querySelector('.panel-handle');let start;handle.addEventListener('pointerdown',event=>{if(event.button!==0)return;start={x:event.clientX,y:event.clientY,left:panel.offsetLeft,top:panel.offsetTop};handle.setPointerCapture(event.pointerId);});handle.addEventListener('pointermove',event=>{if(!start)return;panel.style.left=Math.max(0,Math.min(window.innerWidth-panel.offsetWidth,start.left+event.clientX-start.x))+'px';panel.style.top=Math.max(0,Math.min(window.innerHeight-panel.offsetHeight,start.top+event.clientY-start.y))+'px';panel.style.right='auto';});handle.addEventListener('pointerup',()=>{start=null;});handle.addEventListener('pointercancel',()=>{start=null;});}
+ function runFilterTests(){const original={sector:new Set(selected.sector),state:new Set(selected.state)};const sample={properties:{sector_ids:[9,11],state_ids:['A','B']}};selected.sector=new Set([11]);selected.state=new Set(['B']);const both=visible(sample);selected.sector=new Set([15]);const noSector=!visible(sample);selected.sector=new Set([9]);selected.state=new Set(['Z']);const noState=!visible(sample);selected.state=new Set();const empty=!visible(sample);selected.sector=original.sector;selected.state=original.state;return both&&noSector&&noState&&empty;}
+ function runStateCatalogChecks(){const actual=new Set(allStates.map(([id])=>id)),names=allStates.map(([,name])=>name),source=new Set(STATES.features.map(feature=>feature.properties.id));return {unionMatches:actual.size===relatedStateIds.size&&[...actual].every(id=>relatedStateIds.has(id)),uniqueNames:new Set(names).size===names.length,ordered:names.every((name,index)=>index===0||names[index-1].localeCompare(name,'es')<=0),excludesUnrelated:[...source].filter(id=>!relatedStateIds.has(id)).every(id=>!actual.has(id)),relatedCount:actual.size,sourceCount:source.size};}
+      initializeEntities('zone',ZONES);initializeEntities('vianey',VIANEY);window.__viewerFilterChecks=runFilterTests();window.__viewerStateCatalogChecks=runStateCatalogChecks();window.__viewerDebug={allStates,relatedStateIds,selected,stateLayers,manualHidden,get focused(){return focused;},get focusLayer(){return focusLayer;},byId,refresh,focusKey};
+  document.querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{const group=button.dataset.group, checked=button.dataset.action==='all';selected[group]=new Set(group==='sector'?Object.keys(sectorCatalog).map(Number):allStates.map(x=>x[0]));document.querySelectorAll(`[data-group="${group}"]`).forEach(box=>box.checked=checked);if(!checked)selected[group].clear();refresh();}));document.querySelectorAll('[data-layer-toggle]').forEach(button=>button.addEventListener('click',()=>{toggleAllEntities(button.dataset.layerToggle);}));
+       if(!window.L){document.getElementById('runtime-status').textContent='Leaflet no está disponible. Revise la conexión HTTPS al CDN.';refresh();}else{map=L.map('map');for(const [name,zIndex] of [['statesPane',410],['zonesPane',420],['vianeyPane',430],['focusPane',440]])map.createPane(name).style.zIndex=zIndex;const basemapStatus=document.getElementById('basemap-status');if(location.protocol==='file:'){map.getContainer().classList.add('no-basemap');basemapStatus.hidden=false;basemapStatus.textContent='Mapa base disponible al servir por HTTP(S). Para abrir localmente: desde esta carpeta ejecute python3 -m http.server 8000 --bind 127.0.0.1 y abra http://127.0.0.1:8000/Visor_comparativo_zones_vianey.html; también puede servirlo por Argos.';}else{L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> | INEGI'}).on('tileerror',()=>{document.getElementById('runtime-status').textContent='No se pudieron cargar algunas teselas de OpenStreetMap; las capas vectoriales siguen disponibles.';}).addTo(map);}L.geoJSON(STATES,{pane:'statesPane',interactive:false,style:feature=>({...stateStyle(feature.properties.id),className:'state-boundary'}),onEachFeature:registerStateLayer}).addTo(map);zoneLayer=addLayer(ZONES,{color:'#1d4ed8',weight:1.75,fillColor:'#2563eb',fillOpacity:.45},byId.zone,'zonesPane','zone');vianeyLayer=addLayer(VIANEY,{color:'#b91c1c',weight:2,fillColor:'#dc2626',fillOpacity:.55},byId.vianey,'vianeyPane','vianey');focusLayer=L.geoJSON(null,{pane:'focusPane',style:feature=>focusStyle(feature.__focusKind),onEachFeature:(feature,layer)=>makeInteractive(feature,layer,feature.__focusKind,feature.__focusId)}).addTo(map);fitResults();refresh();}
+   populate('sector',Object.entries(sectorCatalog).map(([id,name])=>[Number(id),name]),'sector-options');populate('state',allStates,'state-options');installDrag(document.getElementById('sectors-panel'));installDrag(document.getElementById('states-panel'));installDrag(document.getElementById('sources-panel'));document.getElementById('fit-results').addEventListener('click',fitResults);document.getElementById('feature-info-close').addEventListener('click',()=>{focused=null;syncFocusLayer();});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!document.getElementById('feature-info').hidden){focused=null;syncFocusLayer();}});
+ </script><script src="./geojson-export.js"></script></body></html>
